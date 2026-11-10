@@ -1,5 +1,5 @@
-import { CONFIG } from './config.js';
-import { ping } from './api.js';
+import { CONFIG } from './config.js?v=10';
+import { ping } from './api.js?v=10';
 
 export function startHealth({ onApi, onDb }) {
   let ultimo = '';

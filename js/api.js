@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js';
+import { CONFIG } from './config.js?v=10';
 
 let token = '';
 export const setToken = t => { token = String(t).trim(); };

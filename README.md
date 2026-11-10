@@ -29,6 +29,9 @@ La misma aplicación tiene dos vistas, **CONTROL** y **MONITOREO**, con navegaci
 - WebSocket `wss://…/ws/vehiculos/1`: el navegador ofrece el token como subprotocolo `auth.<base64url>`.
 - Amazon RDS aparece como «Sin verificar» mientras el backend no exponga un diagnóstico propio (`DB_HEALTH_PATH`).
 
+## Versión de los archivos
+Para que el navegador no mezcle archivos viejos con nuevos (caché), el CSS y los módulos JS se cargan con `?v=10`. Al publicar cambios, sustituye ese número en `index.html` y en los `import` de la carpeta `js/` (con buscar y reemplazar en todo el proyecto, por ejemplo `?v=10` por `?v=11`).
+
 ## Publicación
 GitHub Pages desde la rama `main`, carpeta raíz. Todas las rutas son relativas.
 

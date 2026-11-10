@@ -1,13 +1,13 @@
-import { CONFIG } from './config.js';
-import * as api from './api.js';
-import * as ui from './ui.js';
-import { createCommands } from './commands.js';
-import { createDemo } from './demo.js';
-import { createJoystick } from './joystick.js';
-import { createSocket } from './websocket.js';
-import { startHealth } from './health.js';
-import { createNav } from './nav.js';
-import { createMonitor } from './monitor.js';
+import { CONFIG } from './config.js?v=10';
+import * as api from './api.js?v=10';
+import * as ui from './ui.js?v=10';
+import { createCommands } from './commands.js?v=10';
+import { createDemo } from './demo.js?v=10';
+import { createJoystick } from './joystick.js?v=10';
+import { createSocket } from './websocket.js?v=10';
+import { startHealth } from './health.js?v=10';
+import { createNav } from './nav.js?v=10';
+import { createMonitor } from './monitor.js?v=10';
 
 const $ = id => document.getElementById(id);
 const FASES = { solicitado: 'Solicitado', aceptado: 'Aceptado por la API', evento: 'Evento recibido por WebSocket', error: 'Error' };

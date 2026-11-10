@@ -13,6 +13,7 @@
   --ok:#0b7a4b;--warn:#7a4f00;--bad:#b4142f;--stop:#c8102e;--on-acc:#fff;color-scheme:light}}
 
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
 body{font-family:var(--body);color:var(--text);-webkit-tap-highlight-color:transparent;
   background:
