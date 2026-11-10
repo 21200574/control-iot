@@ -6,6 +6,8 @@ import { createDemo } from './demo.js';
 import { createJoystick } from './joystick.js';
 import { createSocket } from './websocket.js';
 import { startHealth } from './health.js';
+import { createNav } from './nav.js';
+import { createMonitor } from './monitor.js';
 
 const $ = id => document.getElementById(id);
 const FASES = { solicitado: 'Solicitado', aceptado: 'Aceptado por la API', evento: 'Evento recibido por WebSocket', error: 'Error' };
@@ -51,6 +53,7 @@ function onAccepted(clave) {
 
 function onEvent(m) {
   commands.onEvent(m);
+  monitor.onEvent(m);
   const textos = { demo_inicio: 'DEMO iniciada', demo_fin: 'DEMO finalizada', demo_cancelada: 'DEMO cancelada', demo_error: 'Error en la DEMO' };
   if (textos[m.tipo]) ui.setAction(textos[m.tipo], 'evento');
   if (m.tipo === 'demo_movimiento') ui.setAction(`DEMO paso ${Number(m.orden)}: ${String(m.comando)}`, 'evento');
@@ -58,7 +61,9 @@ function onEvent(m) {
 
 const commands = createCommands({ onStatus, onAccepted, onDemoState: ui.setDemoBusy });
 const demo = createDemo({ commands, onMsg: (t, clase) => ui.setAction(t, clase) });
-const socket = createSocket({ onState: s => ui.setIndicator('ws', s), onEvent });
+const monitor = createMonitor();
+const socket = createSocket({ onState: s => { ui.setIndicator('ws', s); monitor.onWsState(s); }, onEvent });
+createNav({ onChange: v => (v === 'monitoreo' ? monitor.activar() : monitor.desactivar()) });
 
 // Botones (Silencio, Luz, DETENER): cada pulsación envía su comando. Joysticks: solo al cambiar de dirección.
 document.querySelectorAll('.cmd[data-cmd]').forEach(b => b.addEventListener('click', () => commands.send(b.dataset.cmd)));
@@ -99,7 +104,9 @@ async function init() {
   const [veh, cmds, demos] = await Promise.allSettled([
     api.getVehiculo(CONFIG.VEHICLE_ID), api.getComandos(CONFIG.VEHICLE_ID), api.getDemos(CONFIG.VEHICLE_ID),
   ]);
-  ui.setVehicle(veh.status === 'fulfilled' && Array.isArray(veh.value) && veh.value[0]?.nombre ? veh.value[0].nombre : `Vehículo ${CONFIG.VEHICLE_ID}`);
+  const nombreVeh = veh.status === 'fulfilled' && Array.isArray(veh.value) && veh.value[0]?.nombre ? veh.value[0].nombre : null;
+  ui.setVehicle(nombreVeh ?? `Vehículo ${CONFIG.VEHICLE_ID}`);
+  if (nombreVeh) monitor.setVehiculo(nombreVeh);
 
   // Los botones DEMO salen de la base de datos y no dependen del catálogo de comandos.
   ui.renderDemos(demos.status === 'fulfilled' && Array.isArray(demos.value) ? demos.value.filter(d => d.activo) : [], id => demo.iniciar(id));

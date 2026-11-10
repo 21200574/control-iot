@@ -14,25 +14,29 @@
 <script>document.documentElement.setAttribute('data-bs-theme', matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
 </head>
 <body>
-<div class="app">
+<div class="app" data-vista="control">
 
   <header class="top a-top">
     <div class="brand">
       <img src="./assets/favicon.svg" alt="" width="34" height="34">
       <div><h1 id="vehicle-name">Control IoT</h1><p>Panel de control</p></div>
     </div>
+    <nav class="nav-vistas" aria-label="Vistas">
+      <a href="#control">Control</a>
+      <a href="#monitoreo">Monitoreo</a>
+    </nav>
     <div class="chips" role="group" aria-label="Estado de conectividad">
       <div class="chip muted" id="ind-ws"><i class="led"></i><div class="t"><span class="lbl"><span class="s">WebSocket WSS</span><span class="l">WebSocket WSS</span></span><strong class="ind-state"></strong></div></div>
       <div class="chip muted" id="ind-api"><i class="led"></i><div class="t"><span class="lbl"><span class="s">Servidor AWS</span><span class="l">Servidor AWS · API de 21 servicios</span></span><strong class="ind-state"></strong></div></div>
       <div class="chip muted" id="ind-db"><i class="led"></i><div class="t"><span class="lbl"><span class="s">Amazon RDS</span><span class="l">Base de datos · Amazon RDS</span></span><strong class="ind-state"></strong></div></div>
     </div>
-    <button id="open-access" class="key mini" type="button" aria-haspopup="dialog">
+    <button id="open-access" class="key mini" type="button" aria-haspopup="dialog" aria-label="Acceso">
       <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
       <span>Acceso</span>
     </button>
   </header>
 
-  <section class="stick a-stickA" data-keys="adelante atras izquierda derecha" aria-label="Joystick de movimiento">
+  <section class="stick v-control a-stickA" data-keys="adelante atras izquierda derecha" aria-label="Joystick de movimiento">
     <div class="stick-body">
       <span class="stick-cap">Movimiento</span>
       <div class="radar-wrap">
@@ -55,7 +59,7 @@
     </div>
   </section>
 
-  <section class="stick claw a-stickB" data-keys="brazo_arriba brazo_abajo pala_cerrar pala_abrir" aria-label="Joystick de brazo y pala">
+  <section class="stick claw v-control a-stickB" data-keys="brazo_arriba brazo_abajo pala_cerrar pala_abrir" aria-label="Joystick de brazo y pala">
     <div class="stick-body">
       <span class="stick-cap" title="Arriba sube el brazo, abajo lo baja, derecha abre la pala, izquierda la cierra">Brazo ▲▼ · Pala ◀▶</span>
       <div class="radar-wrap">
@@ -78,7 +82,7 @@
     </div>
   </section>
 
-  <section class="pad a-pad" aria-label="Funciones del vehículo">
+  <section class="pad v-control a-pad" aria-label="Funciones del vehículo">
     <button class="key tog cmd" data-toggle="silencio" data-keys="silencio_on silencio_off" aria-pressed="false" disabled>
       <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>
       <span class="nm">Silencio</span><span class="st"></span>
@@ -95,13 +99,41 @@
   </section>
 
 
-  <section class="status a-status" aria-label="Última acción">
+  <section class="status v-control a-status" aria-label="Última acción">
     <ol class="tracker" aria-label="Seguimiento de la última acción">
       <li id="st-1" title="Solicitado" aria-label="Solicitado">Solicitado</li>
       <li id="st-2" title="Aceptado por la API" aria-label="Aceptado por la API">Aceptado</li>
       <li id="st-3" title="Evento recibido por WebSocket" aria-label="Evento recibido por WebSocket">Evento</li>
     </ol>
     <p id="action" class="action" aria-live="polite">Cargando catálogo…</p>
+  </section>
+
+  <section class="ultimo v-monitor a-ultimo" aria-labelledby="h-ultimo">
+    <h2 id="h-ultimo">Último movimiento</h2>
+    <div class="ult-cuerpo">
+      <div id="ult-icono" class="ult-icono" aria-hidden="true">–</div>
+      <div class="ult-datos">
+        <p id="ult-nombre" class="ult-nombre">Cargando…</p>
+        <p class="ult-meta">Vehículo: <b id="ult-vehiculo">—</b></p>
+        <p class="ult-meta">Fecha: <b id="ult-fecha">—</b> · Hora: <b id="ult-hora">—</b></p>
+        <p id="ult-fuente" class="ult-fuente"></p>
+      </div>
+    </div>
+    <p id="ult-aviso" class="ult-aviso" role="status"></p>
+  </section>
+
+  <section class="historial v-monitor a-tabla" aria-labelledby="h-hist">
+    <div class="hist-cab">
+      <h2 id="h-hist">Últimos 10 movimientos</h2>
+      <span id="hist-estado" class="hist-estado" role="status"></span>
+    </div>
+    <div class="tabla-wrap" tabindex="0" role="region" aria-labelledby="h-hist">
+      <table class="hist">
+        <caption class="visually-hidden">Últimos diez movimientos individuales registrados, del más reciente al más antiguo</caption>
+        <thead><tr><th scope="col">#</th><th scope="col">Movimiento</th><th scope="col">Fecha</th><th scope="col">Hora</th></tr></thead>
+        <tbody id="hist-cuerpo"><tr><td colspan="4" class="vacio">Cargando…</td></tr></tbody>
+      </table>
+    </div>
   </section>
 
   <footer class="foot a-foot">Desarrollado por Leonardo Álvarez Pérez · 2026</footer>
