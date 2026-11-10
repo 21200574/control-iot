@@ -6,6 +6,7 @@ export const CONFIG = {
   HEALTH_PATH: '/',        // única ruta ligera existente en tu API (GET /)
   DB_HEALTH_PATH: null,    // el backend no expone diagnóstico de RDS: se muestra «Sin verificar»
   HEALTH_EVERY_MS: 15000,
+  DB_FECHAS_EN_UTC: true,  // las fechas de MySQL llegan sin zona; RDS usa UTC por defecto. Si salen desfasadas, cambia a false
   TIMEOUT_MS: 8000,
 };
 

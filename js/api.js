@@ -44,6 +44,8 @@ async function request(path, { method = 'GET', body, auth = false, timeout = CON
 export const ping = (path, timeout = 5000) => request(path, { timeout });
 export const getVehiculo = id => request(`/vehiculos/${id}`);
 export const getComandos = id => request(`/vehiculos/${id}/comandos`);
+export const getEstado = id => request(`/vehiculos/${id}/estado`);
+export const getHistorial = id => request(`/vehiculos/${id}/historial`);
 export const getDemos = id => request(`/vehiculos/${id}/demos`);
 export const getMovimientosDemo = id => request(`/demos/${id}/movimientos`);
 export const postMovimiento = (idVehiculo, idComando) =>
