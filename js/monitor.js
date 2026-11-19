@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=10';
-import * as api from './api.js?v=10';
-import { parseMarca } from './format.js?v=10';
-import * as vista from './monitor-ui.js?v=10';
+import { CONFIG } from './config.js?v=11';
+import * as api from './api.js?v=11';
+import { parseMarca } from './format.js?v=11';
+import * as vista from './monitor-ui.js?v=11';
 
 const MAX_FILAS = 10;
 const ESPERA_MS = 150;   // agrupa ráfagas de eventos en una sola consulta
@@ -36,6 +36,7 @@ export function createMonitor(ui = vista) {
     if (enVuelo) { repetir = { estado: Boolean(repetir?.estado || estado) }; return; }
     enVuelo = true;
     const v0 = ver;
+    const idv = CONFIG.VEHICLE_ID;
     let fallo = false;
     ui.setSync('cargando');
     try {
@@ -43,6 +44,7 @@ export function createMonitor(ui = vista) {
         estado ? api.getEstado(CONFIG.VEHICLE_ID) : null,
         api.getHistorial(CONFIG.VEHICLE_ID),
       ]);
+      if (idv !== CONFIG.VEHICLE_ID) return;                  // se cambió de unidad mientras se consultaba
       if (estado && ver === v0) aplicarEstado(rEstado);     // si llegó un evento mientras tanto, no se pisa
       aplicarHistorial(rHistorial);
       cargado = true;
@@ -99,6 +101,13 @@ export function createMonitor(ui = vista) {
   return {
     activar() { visible = true; ui.setVigencia(wsEnLinea); sync({ estado: true }); },
     desactivar() { visible = false; },
+    // Al cambiar de unidad: se descarta todo lo de la anterior
+    reiniciar() {
+      ultimo = null; cargado = false; ver = 0; ultimaMarcaWS = 0; ultimaHuella = '';
+      repetir = null; pend = null; clearTimeout(temporizador);
+      ui.renderUltimo(null, nombre);
+      ui.mensajeTabla('Cargando…');
+    },
     setVehiculo(n) { nombre = String(n); if (cargado) ui.renderUltimo(ultimo, nombre); },
     onEvent,
     onWsState,

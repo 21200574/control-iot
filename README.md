@@ -17,6 +17,21 @@ La misma aplicación tiene dos vistas, **CONTROL** y **MONITOREO**, con navegaci
 - **Módulos nuevos:** `nav.js` (vistas), `monitor.js` (estado, REST y eventos), `monitor-ui.js` (DOM seguro) y `format.js` (fecha y hora).
 - Un evento recibido confirma que el backend lo publicó; no que el vehículo se haya movido.
 
+## Administración (práctica 4.3)
+
+Tercera pestaña (`#administracion`) con **inicio de sesión por correo y contraseña**. La sesión vive solo en memoria (se pide de nuevo al recargar) y cada rol ve únicamente lo suyo; el servidor vuelve a validar cada operación (401/403/404/409/422).
+
+| Rol | Secciones |
+|---|---|
+| Administrador | Resumen (métricas reales), Unidades, Modelos, Clientes, Asignaciones, Invitados, Demos, Auditoría |
+| Usuario | Mis vehículos, Demos (solo las privadas propias), Invitados (sus unidades) |
+| Invitado | Mi sesión: cuenta regresiva, comandos permitidos y terminar |
+
+- **Demos:** editor de pasos ordenados (comando, duración, pausa) con validación en cliente y en servidor; de fábrica (admin) y privadas.
+- **Invitados:** reserva exclusiva de la unidad por tiempo limitado; al vencer, el servidor detiene la unidad y cierra la sesión.
+- CONTROL y MONITOREO se conservan; los tres indicadores (WSS, API, RDS «Sin verificar») siguen arriba.
+- Módulos nuevos: `auth.js`, `admin.js`, `admin-ui.js`, `admin-vistas.js`, `admin-demos.js`, `admin-invitados.js`. Versión de caché: `?v=11`.
+
 ## Estructura
 `index.html` · `css/styles.css` · `assets/favicon.svg` · `servidor.py` (pruebas locales) · `js/`: `config`, `api` (Fetch), `commands` (único envío de comandos y prioridad de DETENER), `joystick`, `demo`, `websocket`, `health`, `ui`, `app`.
 

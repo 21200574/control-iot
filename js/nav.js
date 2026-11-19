@@ -1,7 +1,7 @@
-const VISTAS = ['control', 'monitoreo'];
-const TITULOS = { control: 'Control IoT', monitoreo: 'Monitoreo IoT' };
+const VISTAS = ['control', 'monitoreo', 'administracion'];
+const TITULOS = { control: 'Control IoT', monitoreo: 'Monitoreo IoT', administracion: 'Administración IoT' };
 
-// Navegación por hash (#control / #monitoreo): funciona en la subruta de GitHub Pages.
+// Navegación por hash (#control / #monitoreo / #administracion): funciona en la subruta de GitHub Pages.
 export function createNav({ onChange }) {
   const app = document.querySelector('.app');
   const enlaces = document.querySelectorAll('.nav-vistas a');

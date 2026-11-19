@@ -1,4 +1,4 @@
-import * as api from './api.js?v=10';
+import * as api from './api.js?v=11';
 
 // Solo inicia DEMO existentes; la secuencia la ejecuta el servidor. DETENER la cancela.
 export function createDemo({ commands, onMsg }) {

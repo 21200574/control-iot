@@ -1,5 +1,5 @@
-import * as api from './api.js?v=10';
-import { CONFIG, NOMBRES } from './config.js?v=10';
+import * as api from './api.js?v=11';
+import { CONFIG, NOMBRES } from './config.js?v=11';
 
 const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/_/g, ' ').trim().toLowerCase();
 
@@ -9,6 +9,10 @@ export function createCommands({ onStatus, onAccepted = () => {}, onDemoState = 
   let enVuelo = false, pendiente = null, ultimo = null, actual = null, gen = 0, demoActiva = false;
 
   function loadCatalog(lista) {
+    // Al cambiar de unidad (o de rol) el catálogo anterior no debe quedar mezclado con el nuevo.
+    Object.keys(idPorClave).forEach(k => delete idPorClave[k]);
+    Object.keys(clavePorId).forEach(k => delete clavePorId[k]);
+    ultimo = null; pendiente = null; actual = null;
     const activos = Array.isArray(lista) ? lista.filter(c => c.activo) : [];
     const faltan = [];
     for (const [clave, alias] of Object.entries(NOMBRES)) {
@@ -79,7 +83,8 @@ export function createCommands({ onStatus, onAccepted = () => {}, onDemoState = 
           onAccepted(clave);
           if (g === gen) onStatus('aceptado', clave);
         } catch (e) {
-          if (e.status === 409 && clave !== 'detener') { demoActiva = true; onDemoState(true); }
+          // Solo un 409 por DEMO en ejecución bloquea los comandos; otros 409 (p. ej. unidad reservada por un invitado) no.
+          if (e.status === 409 && clave !== 'detener' && /DEMO/i.test(e.detail ?? '')) { demoActiva = true; onDemoState(true); }
           if (g === gen) onStatus('error', clave, e.message);
         }
       }

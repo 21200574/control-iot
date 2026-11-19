@@ -116,3 +116,33 @@ export function enableControls(on, faltan = []) {
     b.disabled = !on || incompleto;
   });
 }
+
+// Botón de acceso: muestra el nombre de quien inició sesión.
+export function setUsuario(u, etiquetaRol = '') {
+  $('acceso-txt').textContent = u ? String(u.nombre).split(' ')[0] : 'Acceso';
+  $('open-access').setAttribute('aria-label', u ? `Sesión de ${u.nombre}, ${etiquetaRol}` : 'Acceso');
+  $('open-access').classList.toggle('con-sesion', Boolean(u));
+}
+
+// Selector de unidad: solo aparece si la persona tiene acceso a más de una.
+export function renderUnidades(lista, actualId, onChange) {
+  const sel = $('unit-select');
+  sel.replaceChildren();
+  const varias = lista.length > 1;
+  sel.hidden = !varias;
+  $('vehicle-name').hidden = varias;
+  if (!varias) return;
+  lista.forEach(u => {
+    const o = document.createElement('option');
+    o.value = String(u.id_vehiculo);
+    o.textContent = String(u.nombre);
+    sel.append(o);
+  });
+  sel.value = String(actualId);
+  sel.onchange = () => onChange(Number(sel.value));
+}
+
+export function setUnidadActiva(id) {
+  const sel = $('unit-select');
+  if (!sel.hidden) sel.value = String(id);
+}
