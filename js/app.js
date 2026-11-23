@@ -1,15 +1,15 @@
-import { CONFIG } from './config.js?v=12';
-import * as api from './api.js?v=12';
-import * as auth from './auth.js?v=12';
-import * as ui from './ui.js?v=12';
-import { createCommands } from './commands.js?v=12';
-import { createDemo } from './demo.js?v=12';
-import { createJoystick } from './joystick.js?v=12';
-import { createSocket } from './websocket.js?v=12';
-import { startHealth } from './health.js?v=12';
-import { createNav } from './nav.js?v=12';
-import { createMonitor } from './monitor.js?v=12';
-import { createAdmin } from './admin.js?v=12';
+import { CONFIG } from './config.js?v=13';
+import * as api from './api.js?v=13';
+import * as auth from './auth.js?v=13';
+import * as ui from './ui.js?v=13';
+import { createCommands } from './commands.js?v=13';
+import { createDemo } from './demo.js?v=13';
+import { createJoystick } from './joystick.js?v=13';
+import { createSocket } from './websocket.js?v=13';
+import { startHealth } from './health.js?v=13';
+import { createNav } from './nav.js?v=13';
+import { createMonitor } from './monitor.js?v=13';
+import { createAdmin } from './admin.js?v=13';
 
 const $ = id => document.getElementById(id);
 const FASES = { solicitado: 'Solicitado', aceptado: 'Aceptado por la API', evento: 'Evento recibido por WebSocket', error: 'Error' };
@@ -30,8 +30,11 @@ const INTERRUPTORES = {
     off: { clave: 'luz_off', nm: 'Luz apagada',   st: '○ Toca para encender' },
   },
 };
-const encendido = { silencio: false, luz: false };   // último estado aceptado por la API
-const deseado = { silencio: false, luz: false };     // estado que pide la última pulsación
+// La excavadora arranca con la luz ENCENDIDA y el sonido ACTIVO (silencio desactivado).
+const INICIAL = { silencio: false, luz: true };
+const encendido = { ...INICIAL };   // último estado aceptado por la API
+const deseado = { ...INICIAL };     // estado que pide la última pulsación
+const textoToggle = g => INTERRUPTORES[g][INICIAL[g] ? 'on' : 'off'];
 const ACCION = {};                                   // clave de comando -> { grupo, valor }
 for (const [grupo, e] of Object.entries(INTERRUPTORES)) {
   ACCION[e.on.clave] = { grupo, valor: true };
@@ -191,9 +194,9 @@ auth.onChange(async (sesion, motivo) => {
 // ---------------------------------------------------------------- unidades
 function limpiarControl() {
   Object.entries(INTERRUPTORES).forEach(([g, e]) => {
-    encendido[g] = false;
-    deseado[g] = false;
-    ui.setToggle(g, false, e.off);
+    encendido[g] = INICIAL[g];
+    deseado[g] = INICIAL[g];
+    ui.setToggle(g, INICIAL[g], textoToggle(g));
   });
   ui.renderUnidades([], 0, () => {});
   ui.setVehicle('Control IoT');
@@ -286,7 +289,7 @@ async function revisarAcceso() {
 async function seleccionarUnidad(id) {
   CONFIG.VEHICLE_ID = id;
   ui.setUnidadActiva(id);
-  Object.entries(INTERRUPTORES).forEach(([g, e]) => { encendido[g] = false; deseado[g] = false; ui.setToggle(g, false, e.off); });
+  Object.keys(INTERRUPTORES).forEach(g => { encendido[g] = INICIAL[g]; deseado[g] = INICIAL[g]; ui.setToggle(g, INICIAL[g], textoToggle(g)); });
   ui.setDemoBusy(false);
   monitor.reiniciar();
   const u = unidades.find(x => x.id_vehiculo === id);
@@ -338,7 +341,7 @@ async function cargarCatalogo(id) {
 
 // ---------------------------------------------------------------- inicio
 function init() {
-  Object.entries(INTERRUPTORES).forEach(([g, e]) => ui.setToggle(g, false, e.off));
+  Object.keys(INTERRUPTORES).forEach(g => ui.setToggle(g, INICIAL[g], textoToggle(g)));
   ui.setDemoBusy(false);
   ui.enableControls(false);
   ui.setIndicator('ws', 'desconectado');

@@ -1,5 +1,5 @@
-import { CONFIG } from './config.js?v=12';
-import { parseMarca, fecha, hora } from './format.js?v=12';
+import { CONFIG } from './config.js?v=13';
+import { parseMarca, fecha, hora } from './format.js?v=13';
 
 // Todo el texto (propio o remoto) entra con textContent / createTextNode: nunca innerHTML.
 let contador = 0;

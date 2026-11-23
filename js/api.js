@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js?v=12';
+import { CONFIG } from './config.js?v=13';
 
 // La sesión vive solo en memoria (nunca en localStorage). Se envía como «Authorization: Bearer».
 let token = '';

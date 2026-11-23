@@ -1,4 +1,4 @@
-import * as api from './api.js?v=12';
+import * as api from './api.js?v=13';
 
 // Sesión en memoria: al recargar la página se vuelve a iniciar sesión.
 let sesion = null;

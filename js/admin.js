@@ -1,8 +1,8 @@
-import { el, boton } from './admin-ui.js?v=12';
-import { ROLES } from './auth.js?v=12';
-import * as V from './admin-vistas.js?v=12';
-import { vistaDemos } from './admin-demos.js?v=12';
-import { vistaInvitados } from './admin-invitados.js?v=12';
+import { el, boton } from './admin-ui.js?v=13';
+import { ROLES } from './auth.js?v=13';
+import * as V from './admin-vistas.js?v=13';
+import { vistaDemos } from './admin-demos.js?v=13';
+import { vistaInvitados } from './admin-invitados.js?v=13';
 
 // Cada rol ve solo sus secciones; el servidor vuelve a validar cada operación.
 const TABS = {
