@@ -1,15 +1,15 @@
-import { CONFIG } from './config.js?v=11';
-import * as api from './api.js?v=11';
-import * as auth from './auth.js?v=11';
-import * as ui from './ui.js?v=11';
-import { createCommands } from './commands.js?v=11';
-import { createDemo } from './demo.js?v=11';
-import { createJoystick } from './joystick.js?v=11';
-import { createSocket } from './websocket.js?v=11';
-import { startHealth } from './health.js?v=11';
-import { createNav } from './nav.js?v=11';
-import { createMonitor } from './monitor.js?v=11';
-import { createAdmin } from './admin.js?v=11';
+import { CONFIG } from './config.js?v=12';
+import * as api from './api.js?v=12';
+import * as auth from './auth.js?v=12';
+import * as ui from './ui.js?v=12';
+import { createCommands } from './commands.js?v=12';
+import { createDemo } from './demo.js?v=12';
+import { createJoystick } from './joystick.js?v=12';
+import { createSocket } from './websocket.js?v=12';
+import { startHealth } from './health.js?v=12';
+import { createNav } from './nav.js?v=12';
+import { createMonitor } from './monitor.js?v=12';
+import { createAdmin } from './admin.js?v=12';
 
 const $ = id => document.getElementById(id);
 const FASES = { solicitado: 'Solicitado', aceptado: 'Aceptado por la API', evento: 'Evento recibido por WebSocket', error: 'Error' };
@@ -95,7 +95,7 @@ const admin = createAdmin({
   abrirLogin: () => abrirDialogo(),
 });
 
-createNav({
+const nav = createNav({
   onChange: v => {
     vistaActual = v;
     if (v === 'monitoreo') monitor.activar(); else monitor.desactivar();
@@ -136,13 +136,25 @@ document.querySelectorAll('[data-cerrar-dialogo]').forEach(b => b.addEventListen
 $('open-access').addEventListener('click', abrirDialogo);
 $('logout-btn').addEventListener('click', async () => { dialogo.close(); await auth.logout(); });
 
+// Tipo de cuenta elegido en la pantalla de acceso
+let rolElegido = 'ADMIN';
+const EJEMPLO = { ADMIN: 'admin@excavadora.local', USUARIO: 'cliente@excavadora.local', INVITADO: 'invitado@excavadora.local' };
+document.querySelectorAll('.rol-op').forEach(b => b.addEventListener('click', () => {
+  rolElegido = b.dataset.rol;
+  document.querySelectorAll('.rol-op').forEach(x => x.setAttribute('aria-checked', String(x === b)));
+  $('login-correo').placeholder = EJEMPLO[rolElegido];
+  $('login-error').textContent = '';
+  $('login-correo').focus();
+}));
+$('login-correo').placeholder = EJEMPLO[rolElegido];
+
 $('login-form').addEventListener('submit', async e => {
   e.preventDefault();
   const boton = $('login-enviar');
   boton.disabled = true;
   $('login-error').textContent = '';
   try {
-    await auth.login($('login-correo').value, $('login-pass').value);
+    await auth.login($('login-correo').value, $('login-pass').value, rolElegido);
     $('login-pass').value = '';
   } catch (err) {
     $('login-error').textContent = err.message;
@@ -155,12 +167,18 @@ auth.onChange(async (sesion, motivo) => {
   ui.setUsuario(sesion?.usuario ?? null, auth.ROLES[sesion?.usuario?.rol] ?? '');
   if (sesion) {
     if (dialogo.open) dialogo.close();
+    const invitado = sesion.usuario.rol === 'INVITADO';
+    nav.permitir(invitado ? ['control'] : ['control', 'monitoreo', 'administracion']);   // el invitado solo tiene CONTROL
+    if (invitado) location.hash = '#control';
     ui.setAction('Sesión iniciada. Cargando tus vehículos…', 'info');
     admin.onSesion(sesion.usuario);
     await cargarUnidades();
+    vigilarInvitado();
     return;
   }
   // Sin sesión: se corta todo y se pide iniciar de nuevo
+  detenerVigilante();
+  nav.permitir(['control', 'monitoreo', 'administracion']);
   socket.stop();
   unidades = [];
   limpiarControl();
@@ -186,12 +204,44 @@ function limpiarControl() {
   monitor.reiniciar();
 }
 
+// Invitado: la sesión la inicia otra persona en cualquier momento; se revisa cada 8 s para conectar solo.
+let vigilante = null, cuenta = null, finSesion = 0;
+function detenerVigilante() {
+  clearInterval(vigilante); clearInterval(cuenta);
+  vigilante = cuenta = null; finSesion = 0;
+}
+function vigilarInvitado() {
+  detenerVigilante();
+  if (auth.rol() !== 'INVITADO') return;
+  vigilante = setInterval(() => {
+    const hay = unidades.some(u => u.activo && u.sesion_invitado);
+    if (!hay) cargarUnidades();                 // aún sin sesión: reintenta y conecta en cuanto exista
+    else refrescarUnidades(true);               // con sesión: detecta si terminó
+  }, 8000);
+}
+// Cuenta regresiva de la sesión del invitado, junto al nombre de la unidad.
+function mostrarCuenta(u) {
+  clearInterval(cuenta); cuenta = null;
+  const fin = u?.sesion_invitado?.fin_previsto;
+  if (!fin || auth.rol() !== 'INVITADO') return;
+  const t = Date.parse(CONFIG.DB_FECHAS_EN_UTC && !/[zZ]|[+-]\d\d:?\d\d$/.test(fin) ? fin + 'Z' : fin);
+  if (!Number.isFinite(t)) return;
+  const pintar = () => {
+    const s = Math.max(0, Math.round((t - Date.now()) / 1000));
+    ui.setVehicle(`${u.nombre} · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`);
+    if (s === 0) { clearInterval(cuenta); cuenta = null; setTimeout(() => refrescarUnidades(true), 1500); }
+  };
+  pintar();
+  cuenta = setInterval(pintar, 1000);
+}
+
 function sinUnidad() {
   socket.stop();
   limpiarControl();
+  clearInterval(cuenta); cuenta = null;
   ui.setAction(
     auth.rol() === 'INVITADO'
-      ? 'No tienes una sesión activa. Pide a quien te invitó que la inicie.'
+      ? 'Aún no tienes una sesión activa. Pide al administrador o al cliente que la inicie: esta pantalla se conecta sola.'
       : 'No tienes vehículos asignados. Pide al administrador que te asigne uno.',
     'info',
   );
@@ -241,6 +291,7 @@ async function seleccionarUnidad(id) {
   monitor.reiniciar();
   const u = unidades.find(x => x.id_vehiculo === id);
   ui.setVehicle(u?.nombre ?? `Vehículo ${id}`);
+  mostrarCuenta(u);
   if (u?.nombre) monitor.setVehiculo(u.nombre);
   socket.start(auth.token());
   await cargarCatalogo(id);
@@ -249,10 +300,10 @@ async function seleccionarUnidad(id) {
 
 async function recargarDemos() {
   const id = CONFIG.VEHICLE_ID;
-  if (!auth.usuario() || !id) return;
+  if (!auth.usuario() || !id || auth.rol() === 'INVITADO') return;
   try {
     const demos = await api.getDemos(id);
-    if (id === CONFIG.VEHICLE_ID) ui.renderDemos(demos.filter(d => d.activo), idDemo => demo.iniciar(idDemo));
+    if (id === CONFIG.VEHICLE_ID && auth.rol() !== 'INVITADO') ui.renderDemos(demos.filter(d => d.activo), idDemo => demo.iniciar(idDemo));
   } catch { /* se conserva la lista actual */ }
 }
 
@@ -267,7 +318,7 @@ async function cargarCatalogo(id) {
   if (id !== CONFIG.VEHICLE_ID) return;        // se cambió de unidad mientras se consultaba
 
   // Los botones DEMO salen de la base de datos y no dependen del catálogo de comandos.
-  ui.renderDemos(demos.status === 'fulfilled' && Array.isArray(demos.value) ? demos.value.filter(d => d.activo) : [], idDemo => demo.iniciar(idDemo));
+  ui.renderDemos(auth.rol() !== 'INVITADO' && demos.status === 'fulfilled' && Array.isArray(demos.value) ? demos.value.filter(d => d.activo) : [], idDemo => demo.iniciar(idDemo));   // el invitado no ejecuta DEMO
 
   if (cmds.status !== 'fulfilled') {
     return ui.setAction(`No se pudo cargar el catálogo: ${cmds.reason.message}.`, 'error');

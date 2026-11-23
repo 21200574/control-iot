@@ -1,4 +1,4 @@
-import * as api from './api.js?v=11';
+import * as api from './api.js?v=12';
 
 // Sesión en memoria: al recargar la página se vuelve a iniciar sesión.
 let sesion = null;
@@ -11,6 +11,7 @@ export const usuario = () => sesion?.usuario ?? null;
 export const rol = () => sesion?.usuario?.rol ?? null;
 export const token = () => sesion?.token ?? '';
 
+export const ROL_LOGIN = { ADMIN: 'Administrador', USUARIO: 'Cliente', INVITADO: 'Invitado' };
 export const ROLES = { ADMIN: 'Administrador', USUARIO: 'Usuario', INVITADO: 'Invitado' };
 
 function programarExpiracion(iso) {
@@ -21,9 +22,15 @@ function programarExpiracion(iso) {
   }
 }
 
-export async function login(correo, password) {
+// rolEsperado (opcional): el tipo de cuenta que la persona eligió en la pantalla de acceso.
+export async function login(correo, password, rolEsperado) {
   const r = await api.login(String(correo).trim(), password);
   api.setToken(r.token);
+  if (rolEsperado && r.usuario.rol !== rolEsperado) {
+    try { await api.logout(); } catch { /* el token caduca solo */ }
+    api.setToken('');
+    throw new Error(`Esa cuenta es de ${ROL_LOGIN[r.usuario.rol] ?? r.usuario.rol}, no de ${ROL_LOGIN[rolEsperado] ?? rolEsperado}. Elige el tipo de cuenta correcto.`);
+  }
   sesion = { token: r.token, usuario: r.usuario, expira_en: r.expira_en };
   programarExpiracion(r.expira_en);
   avisar('login');

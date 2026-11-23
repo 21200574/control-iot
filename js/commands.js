@@ -1,5 +1,5 @@
-import * as api from './api.js?v=11';
-import { CONFIG, NOMBRES } from './config.js?v=11';
+import * as api from './api.js?v=12';
+import { CONFIG, NOMBRES } from './config.js?v=12';
 
 const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/_/g, ' ').trim().toLowerCase();
 

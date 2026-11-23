@@ -1,8 +1,8 @@
-import { http } from './api.js?v=11';
+import { http } from './api.js?v=12';
 import {
   el, bloque, tabla, boton, botonConfirmar, campo, selector, insignia, kpi, fmt,
   accion, pedir, graficaBarras, ranking, cuentaRegresiva,
-} from './admin-ui.js?v=11';
+} from './admin-ui.js?v=12';
 
 const si = (v, ok = 'Sí', no = 'No') => insignia(v ? ok : no, v ? 'ok' : '');
 const ROL_TIPO = { ADMIN: 'acc', USUARIO: 'orq', INVITADO: 'warn' };
@@ -80,16 +80,59 @@ export async function unidades(out, ctx) {
   ], lista, { claseFila: u => (u.activo ? '' : 'inactiva'), etiqueta: 'Unidades' })));
 
   if (!activos.length) {
-    return out.append(el('p', { class: 'adm-vacio' }, 'Crea primero un modelo activo para poder dar de alta unidades.'));
+    return out.append(el('p', { class: 'adm-vacio' }, 'Crea primero un modelo activo (pestaña Modelos) para poder dar de alta unidades.'));
   }
 
-  const nombre = el('input', { type: 'text', class: 'form-control', required: true, minLength: 2, maxLength: 80 });
+  // Campos = columnas de la tabla `vehiculos` (límites iguales a los de la base de datos).
+  const nombre = el('input', { type: 'text', class: 'form-control', required: true, minLength: 2, maxLength: 80, placeholder: 'Excavadora 2' });
   const modelo = selector(activos.map(m => ({ valor: m.id_modelo, texto: m.nombre })));
-  const serie = el('input', { type: 'text', class: 'form-control', maxLength: 50, placeholder: 'EXC-0002' });
+  const serie = el('input', { type: 'text', class: 'form-control', maxLength: 50 });
+  const micro = el('input', { type: 'text', class: 'form-control', maxLength: 50 });
   const desc = el('input', { type: 'text', class: 'form-control', maxLength: 255 });
-  const micro = el('input', { type: 'text', class: 'form-control', maxLength: 50, value: 'ESP32' });
-  const clonar = selector([{ valor: '', texto: 'No copiar' }, ...lista.map(u => ({ valor: u.id_vehiculo, texto: `Copiar de «${u.nombre}»` }))], lista[0]?.id_vehiculo ?? '');
+  const base = selector([{ valor: '', texto: 'Ninguna (unidad vacía, sin comandos)' },
+    ...lista.map(u => ({ valor: u.id_vehiculo, texto: `${u.nombre} · serie ${u.numero_serie ?? 's/n'}` }))], lista[0]?.id_vehiculo ?? '');
+  const previa = el('div', { class: 'adm-prev', 'aria-live': 'polite' });
   const enviar = el('button', { type: 'submit', class: 'btn-a prim' }, 'Crear unidad');
+  const editado = { desc: false, micro: false, serie: false };
+  desc.addEventListener('input', () => { editado.desc = true; });
+  micro.addEventListener('input', () => { editado.micro = true; });
+  serie.addEventListener('input', () => { editado.serie = true; });
+
+  // Siguiente número de serie sugerido a partir de los que ya existen (EXC-0001 -> EXC-0002).
+  function serieSugerida() {
+    let mejor = null;
+    for (const u of lista) {
+      const m = /^(.*?)(\d+)$/.exec(u.numero_serie ?? '');
+      if (m && (!mejor || Number(m[2]) > mejor.n)) mejor = { pre: m[1], n: Number(m[2]), largo: m[2].length };
+    }
+    return mejor ? mejor.pre + String(mejor.n + 1).padStart(mejor.largo, '0') : '';
+  }
+
+  // Muestra, con datos reales de la base, lo que heredará la unidad nueva.
+  let pedido = 0;
+  async function actualizarPrevia() {
+    const id = Number(base.value);
+    const mio = ++pedido;
+    if (!id) { previa.replaceChildren(el('p', { class: 'adm-nota' }, 'La unidad se crea sin comandos ni demos; tendrás que cargarlos aparte.')); return; }
+    previa.replaceChildren(el('p', { class: 'adm-nota' }, 'Leyendo la base de datos…'));
+    const u = lista.find(x => x.id_vehiculo === id);
+    if (u) {
+      if (!editado.micro) micro.value = u.microcontrolador ?? '';
+      if (!editado.desc) desc.value = u.descripcion ?? '';
+      if (!u.id_modelo || ![...modelo.options].some(o => Number(o.value) === u.id_modelo)) { /* conserva el modelo elegido */ } else modelo.value = String(u.id_modelo);
+    }
+    try {
+      const [cmds, demos] = await Promise.all([http.get(`/vehiculos/${id}/comandos`), http.get(`/vehiculos/${id}/demos`)]);
+      if (mio !== pedido) return;
+      previa.replaceChildren(
+        el('p', { class: 'adm-nota' }, `Se copiarán ${cmds.length} comandos y ${demos.length} demo(s) de «${u?.nombre ?? id}»:`),
+        el('div', { class: 'd-flex flex-wrap gap-1' }, cmds.map(c => insignia(`${c.codigo} · ${String(c.nombre).replace(/_/g, ' ')}`, c.activo ? 'acc' : ''))),
+        demos.length ? el('div', { class: 'd-flex flex-wrap gap-1 mt-1' }, demos.map(d => insignia(`DEMO · ${d.nombre}`, 'orq'))) : null);
+    } catch (e) {
+      if (mio === pedido) previa.replaceChildren(el('p', { class: 'adm-nota' }, `No se pudo leer el catálogo: ${e.message}`));
+    }
+  }
+  base.addEventListener('change', actualizarPrevia);
 
   out.append(bloque('Nueva unidad',
     el('form', {
@@ -97,15 +140,20 @@ export async function unidades(out, ctx) {
         e.preventDefault();
         accion(ctx, enviar, () => http.post('/admin/unidades', {
           nombre: nombre.value.trim(), id_modelo: Number(modelo.value), numero_serie: serie.value.trim() || null,
-          descripcion: desc.value.trim() || null, microcontrolador: micro.value.trim() || 'ESP32',
-          clonar_de: clonar.value ? Number(clonar.value) : null,
+          descripcion: desc.value.trim() || null, microcontrolador: micro.value.trim() || null,
+          clonar_de: base.value ? Number(base.value) : null,
         }), 'Unidad creada', { unidades: true });
       },
     },
-    campo('Nombre', nombre), campo('Modelo', modelo), campo('Número de serie', serie),
-    campo('Microcontrolador', micro), campo('Descripción', desc), campo('Comandos y demos de fábrica', clonar),
+    campo('Nombre', nombre), campo('Modelo', modelo), campo('Número de serie (único)', serie),
+    campo('Microcontrolador', micro), campo('Descripción', desc, { ancho: true }),
+    campo('Copiar comandos y demos de', base, { ancho: true }),
+    el('div', { class: 'campo ancho' }, previa),
     el('div', { class: 'acciones' }, enviar)),
-    el('p', { class: 'adm-nota' }, 'Una unidad nueva nace sin comandos: copiarlos de otra unidad le da el catálogo y las demos de fábrica.')));
+    el('p', { class: 'adm-nota' }, 'Los campos son los de la tabla de vehículos. El comando DETENER y el catálogo vienen de la base de datos, no se escriben a mano.')));
+
+  serie.value = serieSugerida();
+  await actualizarPrevia();
 }
 
 // ================================================================ MODELOS (solo ADMIN)

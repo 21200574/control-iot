@@ -30,7 +30,10 @@ Tercera pestaña (`#administracion`) con **inicio de sesión por correo y contra
 - **Demos:** editor de pasos ordenados (comando, duración, pausa) con validación en cliente y en servidor; de fábrica (admin) y privadas.
 - **Invitados:** reserva exclusiva de la unidad por tiempo limitado; al vencer, el servidor detiene la unidad y cierra la sesión.
 - CONTROL y MONITOREO se conservan; los tres indicadores (WSS, API, RDS «Sin verificar») siguen arriba.
-- Módulos nuevos: `auth.js`, `admin.js`, `admin-ui.js`, `admin-vistas.js`, `admin-demos.js`, `admin-invitados.js`. Versión de caché: `?v=11`.
+- **Acceso:** pantalla de inicio con tres botones (Administrador, Cliente, Invitado); si la cuenta no corresponde al botón elegido, se rechaza.
+- **Invitado:** solo ve CONTROL (sin Monitoreo ni Administración) y mueve la unidad reservada para su sesión; al iniciar la sesión otra persona, su pantalla se conecta sola y muestra la cuenta regresiva.
+- **Nueva unidad:** el formulario usa las columnas de la tabla de vehículos y copia comandos y demos desde una unidad existente (vista previa leída de la base de datos).
+- Módulos nuevos: `auth.js`, `admin.js`, `admin-ui.js`, `admin-vistas.js`, `admin-demos.js`, `admin-invitados.js`. Versión de caché: `?v=12`.
 
 ## Estructura
 `index.html` · `css/styles.css` · `assets/favicon.svg` · `servidor.py` (pruebas locales) · `js/`: `config`, `api` (Fetch), `commands` (único envío de comandos y prioridad de DETENER), `joystick`, `demo`, `websocket`, `health`, `ui`, `app`.
@@ -45,7 +48,7 @@ Tercera pestaña (`#administracion`) con **inicio de sesión por correo y contra
 - Amazon RDS aparece como «Sin verificar» mientras el backend no exponga un diagnóstico propio (`DB_HEALTH_PATH`).
 
 ## Versión de los archivos
-Para que el navegador no mezcle archivos viejos con nuevos (caché), el CSS y los módulos JS se cargan con `?v=10`. Al publicar cambios, sustituye ese número en `index.html` y en los `import` de la carpeta `js/` (con buscar y reemplazar en todo el proyecto, por ejemplo `?v=10` por `?v=11`).
+Para que el navegador no mezcle archivos viejos con nuevos (caché), el CSS y los módulos JS se cargan con `?v=10`. Al publicar cambios, sustituye ese número en `index.html` y en los `import` de la carpeta `js/` (con buscar y reemplazar en todo el proyecto, por ejemplo `?v=10` por `?v=12`).
 
 ## Publicación
 GitHub Pages desde la rama `main`, carpeta raíz. Todas las rutas son relativas.

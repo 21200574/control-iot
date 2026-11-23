@@ -1,4 +1,4 @@
-import { fecha, hora } from './format.js?v=11';
+import { fecha, hora } from './format.js?v=12';
 
 const $ = id => document.getElementById(id);
 const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/_/g, ' ').trim().toLowerCase();

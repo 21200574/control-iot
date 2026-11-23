@@ -335,3 +335,18 @@ details.tabla-datos summary{cursor:pointer;min-height:32px;display:flex;align-it
 
 dialog.adm-dlg{width:min(92vw,380px)}
 .cuenta{font:700 .8rem var(--display);color:var(--warn);white-space:nowrap}
+
+/* Selector de tipo de cuenta (login) */
+.rol-q{margin:0 0 .4rem;font-size:.8rem;color:var(--muted)}
+.rol-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.7rem}
+.rol-op{display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.55rem .3rem;border:1px solid var(--line);border-radius:12px;
+  background:var(--panel);color:var(--muted);cursor:pointer;text-align:center;min-height:44px;font-family:inherit}
+.rol-op svg{width:26px;height:26px}
+.rol-op b{font:700 .78rem var(--display);color:var(--text)}
+.rol-op small{font-size:.66rem;line-height:1.1}
+.rol-op:hover{border-color:var(--plasma)}
+.rol-op[aria-checked="true"]{border-color:var(--plasma);color:var(--plasma);background:color-mix(in srgb,var(--plasma) 14%,var(--panel));
+  box-shadow:0 0 14px color-mix(in srgb,var(--plasma) 35%,transparent)}
+.rol-op:focus-visible{outline:3px solid var(--text);outline-offset:2px}
+.nav-vistas a[hidden]{display:none!important}
+.adm-prev{padding:.5rem;border:1px dashed var(--line);border-radius:10px;min-height:2.4rem}
