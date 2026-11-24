@@ -55,3 +55,7 @@ GitHub Pages desde la rama `main`, carpeta raíz. Todas las rutas son relativas.
 
 ## Alcance
 Un evento WebSocket confirma la publicación por el backend, no el movimiento físico. No hay monitoreo, administración ni control del ESP.
+
+
+## Entrada libre de invitado (v14)
+En «Acceso» el botón **Invitado** ya no pide correo ni contraseña: solo «Entrar como invitado». El servidor crea una sesión temporal (10 minutos por defecto) en la excavadora por defecto, la página se conecta al WebSocket y el invitado ve únicamente la pantalla de **Control** (sin Monitoreo ni Administración). Solo una persona a la vez; si la excavadora está ocupada se muestra el aviso. Al cerrar sesión se libera la unidad. Requiere el backend etapa 7 (`POST /invitado/entrar`).

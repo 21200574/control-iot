@@ -1,8 +1,8 @@
-import { http } from './api.js?v=13';
+import { http } from './api.js?v=14';
 import {
   el, bloque, tabla, boton, botonConfirmar, campo, selector, insignia, kpi, fmt,
   accion, pedir, graficaBarras, ranking, cuentaRegresiva,
-} from './admin-ui.js?v=13';
+} from './admin-ui.js?v=14';
 
 const si = (v, ok = 'Sí', no = 'No') => insignia(v ? ok : no, v ? 'ok' : '');
 const ROL_TIPO = { ADMIN: 'acc', USUARIO: 'orq', INVITADO: 'warn' };

@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js?v=13';
+import { CONFIG } from './config.js?v=14';
 
 // La sesión vive solo en memoria (nunca en localStorage). Se envía como «Authorization: Bearer».
 let token = '';
@@ -75,6 +75,10 @@ export const http = {
 // Sesión
 export const login = (correo, password) =>
   request('/auth/login', { method: 'POST', anon: true, body: { correo, password } });
+export const entrarInvitado = () =>
+  request('/invitado/entrar', { method: 'POST', anon: true });
+export const terminarSesionInvitado = id =>
+  request(`/invitado/sesiones/${id}/terminar`, { method: 'POST', auth: true });
 export const logout = () => request('/auth/logout', { method: 'POST', auth: true });
 export const yo = () => request('/auth/yo', { auth: true });
 export const misVehiculos = () => request('/mis-vehiculos', { auth: true });

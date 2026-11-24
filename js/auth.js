@@ -1,4 +1,4 @@
-import * as api from './api.js?v=13';
+import * as api from './api.js?v=14';
 
 // Sesión en memoria: al recargar la página se vuelve a iniciar sesión.
 let sesion = null;
@@ -37,6 +37,16 @@ export async function login(correo, password, rolEsperado) {
   return sesion.usuario;
 }
 
+// Invitado sin cuenta: el servidor crea una sesión temporal y devuelve su token.
+export async function entrarInvitado() {
+  const r = await api.entrarInvitado();
+  api.setToken(r.token);
+  sesion = { token: r.token, usuario: r.usuario, expira_en: r.expira_en, idSesionInvitado: r.sesion?.id_sesion_invitado ?? null };
+  programarExpiracion(r.expira_en);
+  avisar('login');
+  return sesion.usuario;
+}
+
 export function cerrarLocal(motivo = '') {
   if (!sesion) return;
   clearTimeout(temporizador);
@@ -47,6 +57,8 @@ export function cerrarLocal(motivo = '') {
 
 export async function logout() {
   if (!sesion) return;
+  // Si es invitado, se libera la excavadora para la siguiente persona.
+  if (sesion.idSesionInvitado) { try { await api.terminarSesionInvitado(sesion.idSesionInvitado); } catch { /* ya terminó */ } }
   try { await api.logout(); } catch { /* si el servidor no responde, igual se cierra aquí */ }
   cerrarLocal('Sesión cerrada');
 }

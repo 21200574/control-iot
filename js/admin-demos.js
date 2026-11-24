@@ -1,5 +1,5 @@
-import { http } from './api.js?v=13';
-import { el, bloque, tabla, boton, botonConfirmar, campo, selector, insignia, accion } from './admin-ui.js?v=13';
+import { http } from './api.js?v=14';
+import { el, bloque, tabla, boton, botonConfirmar, campo, selector, insignia, accion } from './admin-ui.js?v=14';
 
 // Mismos límites que el servidor (demos_router.py); el servidor vuelve a validar todo.
 const MAX_PASOS = 50, MIN_DUR = 200, MAX_DUR = 10000, MAX_PAUSA = 10000, MAX_TOTAL = 300000;

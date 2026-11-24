@@ -1,5 +1,5 @@
-import { http } from './api.js?v=13';
-import { el, bloque, tabla, boton, botonConfirmar, campo, selector, insignia, fmt, accion, cuentaRegresiva } from './admin-ui.js?v=13';
+import { http } from './api.js?v=14';
+import { el, bloque, tabla, boton, botonConfirmar, campo, selector, insignia, fmt, accion, cuentaRegresiva } from './admin-ui.js?v=14';
 
 const NO_PERMITIDOS = new Set(['DEMO', 'DETENER']);
 const bonito = s => String(s ?? '').replace(/_/g, ' ');

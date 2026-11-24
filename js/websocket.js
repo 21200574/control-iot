@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js?v=13';
+import { CONFIG } from './config.js?v=14';
 
 // El navegador no puede enviar encabezados en un WebSocket: el token de sesión se ofrece como
 // subprotocolo («auth.<base64url>»). El backend lo valida y comprueba el acceso a la unidad.

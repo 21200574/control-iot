@@ -1,15 +1,15 @@
-import { CONFIG } from './config.js?v=13';
-import * as api from './api.js?v=13';
-import * as auth from './auth.js?v=13';
-import * as ui from './ui.js?v=13';
-import { createCommands } from './commands.js?v=13';
-import { createDemo } from './demo.js?v=13';
-import { createJoystick } from './joystick.js?v=13';
-import { createSocket } from './websocket.js?v=13';
-import { startHealth } from './health.js?v=13';
-import { createNav } from './nav.js?v=13';
-import { createMonitor } from './monitor.js?v=13';
-import { createAdmin } from './admin.js?v=13';
+import { CONFIG } from './config.js?v=14';
+import * as api from './api.js?v=14';
+import * as auth from './auth.js?v=14';
+import * as ui from './ui.js?v=14';
+import { createCommands } from './commands.js?v=14';
+import { createDemo } from './demo.js?v=14';
+import { createJoystick } from './joystick.js?v=14';
+import { createSocket } from './websocket.js?v=14';
+import { startHealth } from './health.js?v=14';
+import { createNav } from './nav.js?v=14';
+import { createMonitor } from './monitor.js?v=14';
+import { createAdmin } from './admin.js?v=14';
 
 const $ = id => document.getElementById(id);
 const FASES = { solicitado: 'Solicitado', aceptado: 'Aceptado por la API', evento: 'Evento recibido por WebSocket', error: 'Error' };
@@ -147,7 +147,13 @@ document.querySelectorAll('.rol-op').forEach(b => b.addEventListener('click', ()
   document.querySelectorAll('.rol-op').forEach(x => x.setAttribute('aria-checked', String(x === b)));
   $('login-correo').placeholder = EJEMPLO[rolElegido];
   $('login-error').textContent = '';
-  $('login-correo').focus();
+  const libre = rolElegido === 'INVITADO';          // el invitado no escribe correo ni contraseña
+  $('login-campos').hidden = libre;
+  $('login-invitado').hidden = !libre;
+  $('login-correo').required = !libre;
+  $('login-pass').required = !libre;
+  $('login-enviar').textContent = libre ? 'Entrar como invitado' : 'Entrar';
+  if (!libre) $('login-correo').focus();
 }));
 $('login-correo').placeholder = EJEMPLO[rolElegido];
 
@@ -157,7 +163,8 @@ $('login-form').addEventListener('submit', async e => {
   boton.disabled = true;
   $('login-error').textContent = '';
   try {
-    await auth.login($('login-correo').value, $('login-pass').value, rolElegido);
+    if (rolElegido === 'INVITADO') await auth.entrarInvitado();
+    else await auth.login($('login-correo').value, $('login-pass').value, rolElegido);
     $('login-pass').value = '';
   } catch (err) {
     $('login-error').textContent = err.message;

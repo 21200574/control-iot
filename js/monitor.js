@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=13';
-import * as api from './api.js?v=13';
-import { parseMarca } from './format.js?v=13';
-import * as vista from './monitor-ui.js?v=13';
+import { CONFIG } from './config.js?v=14';
+import * as api from './api.js?v=14';
+import { parseMarca } from './format.js?v=14';
+import * as vista from './monitor-ui.js?v=14';
 
 const MAX_FILAS = 10;
 const ESPERA_MS = 150;   // agrupa ráfagas de eventos en una sola consulta
